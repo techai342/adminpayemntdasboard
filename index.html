@@ -19,13 +19,11 @@
         }
         .active-tab { border-bottom: 3px solid #f97316; color: #f97316; }
         
-        /* Bar Graph Style Slots */
         .slot-bar { height: 8px; width: 100%; border-radius: 4px; margin-top: 6px; }
-        .status-free { background: #22c55e; box-shadow: 0 0 10px #22c55e66; } /* Green - Available */
-        .status-sent { background: #eab308; box-shadow: 0 0 10px #eab30866; } /* Yellow - Sent/Assigned */
-        .status-filled { background: #ef4444; box-shadow: 0 0 10px #ef444466; } /* Red - Data Filled */
+        .status-free { background: #22c55e; box-shadow: 0 0 10px #22c55e66; }
+        .status-sent { background: #eab308; box-shadow: 0 0 10px #eab30866; }
+        .status-filled { background: #ef4444; box-shadow: 0 0 10px #ef444466; }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
@@ -45,7 +43,7 @@
     <div class="bg-fixed"></div>
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <!-- HEADER WITH NEW SQUAD MANAGER BUTTON -->
+        <!-- HEADER -->
         <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 glass p-6 rounded-3xl shadow-2xl">
             <div class="flex items-center gap-4">
                 <div>
@@ -58,14 +56,12 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <!-- NEW SQUAD MANAGER BUTTON -->
                 <a href="https://admindta.vercel.app/" target="_blank" class="btn-manager px-6 py-3 rounded-xl text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     Squad Manager
                 </a>
-
                 <button onclick="location.reload()" class="bg-white/5 hover:bg-white/10 p-3 rounded-xl transition border border-white/10">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </button>
@@ -83,7 +79,17 @@
         <div id="section-new" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
         <!-- HISTORY & RESET -->
-        <div id="section-old" class="hidden">
+        <div id="section-old" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center glass p-6 rounded-3xl gap-4 border border-red-500/20">
+                <div>
+                    <h3 class="text-white font-black uppercase italic tracking-wider">Danger Zone: Full Tournament Reset</h3>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mt-1">⚠️ This will delete ALL registrations and unassign ALL slots.</p>
+                </div>
+                <button onclick="resetAllSlots()" class="bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-900/40">
+                    🔥 Full Reset (All Slots)
+                </button>
+            </div>
+
             <div class="glass rounded-3xl overflow-hidden border border-white/10">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -104,13 +110,11 @@
 
         <!-- SLOT VISUALIZER -->
         <div id="section-slots" class="hidden">
-            <!-- Legend -->
             <div class="flex flex-wrap gap-4 mb-8 glass p-4 rounded-2xl inline-flex">
                 <div class="flex items-center gap-2"><div class="w-3 h-3 bg-green-500 rounded shadow-[0_0_10px_#22c55e]"></div> <span class="text-[10px] font-black uppercase">Green: Free</span></div>
                 <div class="flex items-center gap-2"><div class="w-3 h-3 bg-yellow-500 rounded shadow-[0_0_10px_#eab308]"></div> <span class="text-[10px] font-black uppercase">Yellow: Sent (Pending)</span></div>
                 <div class="flex items-center gap-2"><div class="w-3 h-3 bg-red-500 rounded shadow-[0_0_10px_#ef4444]"></div> <span class="text-[10px] font-black uppercase">Red: Filled</span></div>
             </div>
-
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="slotsGrid"></div>
         </div>
     </div>
@@ -118,13 +122,11 @@
     <!-- VERIFY MODAL -->
     <div id="verifyModal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-5xl p-6 md:p-8 flex flex-col md:flex-row gap-8 overflow-y-auto max-h-[95vh] shadow-2xl">
-            <!-- Image Section -->
             <div class="flex-1 bg-black rounded-3xl overflow-hidden border border-white/5 relative group">
                 <img id="modalImg" class="w-full h-full object-contain" src="">
                 <a id="modalImgLink" href="#" target="_blank" class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-all text-white font-bold uppercase text-xs">View Full Size</a>
             </div>
             
-            <!-- Details Section -->
             <div class="flex-1 flex flex-col justify-center">
                 <h2 class="text-3xl font-black text-white italic uppercase mb-2">Review Payment</h2>
                 <p class="text-slate-500 text-xs font-bold uppercase mb-8 border-b border-white/10 pb-4">Verify details before assigning slot</p>
@@ -152,7 +154,6 @@
                         </select>
                         <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-400">▼</div>
                     </div>
-                    <p class="text-[10px] text-slate-500 mt-2">* 🟢 = Free | 🟡 = Sent | 🔴 = Filled (Choose wisely)</p>
                 </div>
 
                 <div class="flex flex-col gap-3 mt-auto">
@@ -250,16 +251,17 @@
                 const assignedId = u.assigned_auth_id;
                 
                 let rowStatusHtml = `<span class="text-red-500">REJECTED</span>`;
-                let resetButton = '';
+                let controlButtons = '';
                 
                 if(isApproved && assignedId) {
                     const status = filledMap[assignedId];
                     if(status === 'red') {
                         rowStatusHtml = `<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-[10px]">🔴 FILLED</span>`;
-                        resetButton = `<button onclick="resetSquadData('${assignedId}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-[10px] uppercase hover:bg-red-500 ml-2">Reset Squad Data</button>`;
                     } else {
                         rowStatusHtml = `<span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-[10px]">🟡 SENT</span>`;
                     }
+                    // Reset Button for Single User
+                    controlButtons += `<button onclick="resetIndividualBooking('${u.id}', '${assignedId}')" class="bg-orange-600/20 text-orange-400 px-3 py-1 rounded-lg text-[10px] uppercase hover:bg-orange-600 hover:text-white transition-all mr-2">Reset Booking</button>`;
                 }
 
                 body.innerHTML += `
@@ -269,13 +271,66 @@
                         <td class="p-5 font-black text-orange-500">${assignedId || '-'}</td>
                         <td class="p-5 font-black uppercase text-[10px]">${rowStatusHtml}</td>
                         <td class="p-5 flex items-center gap-2">
-                           ${resetButton}
-                           ${!isApproved ? `<button onclick="deletePaymentUser(${u.id})" class="text-xs text-slate-500 underline hover:text-red-500">Delete</button>` : ''}
+                            ${controlButtons}
+                            <button onclick="deletePaymentUser(${u.id})" class="text-xs text-slate-500 underline hover:text-red-500">Delete Record</button>
                         </td>
                     </tr>
                 `;
             });
         }
+
+        // --- RESET LOGIC ---
+
+        async function resetIndividualBooking(userId, authId) {
+            if(!confirm(`⚠️ Reset Booking for this user?\n\nThis will:\n1. Delete squad data (if any)\n2. Reset user status to 'new'\n3. Make slot ${authId} free again.`)) return;
+            
+            try {
+                // Delete squad registration
+                await supabaseClient.from('squad_registrations').delete().eq('auth_user_id', authId);
+                
+                // Reset user record
+                const { error } = await supabaseClient.from('payment_users').update({
+                    status: 'new',
+                    assigned_auth_id: null,
+                    trx_id: null,
+                    screenshot_url: null,
+                    payment_method: null
+                }).eq('id', userId);
+
+                if(!error) {
+                    alert("User Booking Reset Successful!");
+                    loadHistory();
+                    loadSlotsGrid();
+                }
+            } catch (err) { alert("Error resetting user: " + err.message); }
+        }
+
+        async function resetAllSlots() {
+            const pin = prompt("🚨 DANGER ZONE\nTo delete ALL data and reset ALL slots, type 'CONFIRM':");
+            if (pin !== 'CONFIRM') return;
+
+            try {
+                // 1. Delete ALL registrations
+                await supabaseClient.from('squad_registrations').delete().neq('id', 0);
+
+                // 2. Reset ALL payment users to new
+                const { error } = await supabaseClient.from('payment_users').update({
+                    status: 'new',
+                    assigned_auth_id: null,
+                    trx_id: null,
+                    screenshot_url: null,
+                    payment_method: null,
+                    account_name: null
+                }).neq('id', 0);
+
+                if (!error) {
+                    alert("✅ System Fresh: All Slots Reset!");
+                    location.reload();
+                } else { throw error; }
+            } catch (error) { alert("Reset failed: " + error.message); }
+        }
+
+        // --- GRID LOGIC ---
 
         async function loadSlotsGrid() {
             const grid = document.getElementById('slotsGrid');
@@ -290,8 +345,8 @@
                 if (s.status === 'red') { colorClass = 'status-filled'; label = 'Filled'; }
 
                 let actionBtn = '';
-                if(s.status === 'red') {
-                    actionBtn = `<button onclick="resetSquadData('${s.id}')" class="mt-2 text-[8px] bg-red-500/20 text-red-400 px-2 py-1 rounded uppercase hover:bg-red-500 hover:text-white w-full transition">Reset Data</button>`;
+                if(s.status === 'red' || s.status === 'yellow') {
+                    actionBtn = `<button onclick="resetSquadDataOnly('${s.id}')" class="mt-2 text-[8px] bg-red-500/20 text-red-400 px-2 py-1 rounded uppercase hover:bg-red-500 hover:text-white w-full transition">Clear Squad Data</button>`;
                 }
 
                 grid.innerHTML += `
@@ -305,6 +360,7 @@
             });
         }
 
+        // Helpers
         async function openVerify(user) {
             selectedUser = user;
             document.getElementById('modalImg').src = user.screenshot_url;
@@ -319,8 +375,7 @@
             sel.innerHTML = '<option value="">Select a Slot...</option>';
             
             slots.forEach(s => {
-                let emoji = '🟢';
-                let text = 'FREE';
+                let emoji = '🟢'; let text = 'FREE';
                 if(s.status === 'yellow') { emoji = '🟡'; text = 'SENT'; }
                 if(s.status === 'red') { emoji = '🔴'; text = 'FILLED'; }
                 sel.innerHTML += `<option value="${s.id}">${emoji} ${s.id} [${text}]</option>`;
@@ -336,7 +391,7 @@
             const { error } = await supabaseClient.from('payment_users').update({
                 status: 'approved', assigned_auth_id: slot
             }).eq('id', selectedUser.id);
-            if(!error) { alert("Approved!"); closeModal(); loadNew(); }
+            if(!error) { closeModal(); loadNew(); }
         }
 
         async function rejectAction() {
@@ -345,14 +400,14 @@
             if(!error) { closeModal(); loadNew(); }
         }
 
-        async function resetSquadData(authId) {
-            if(!confirm(`Reset data for ${authId}?`)) return;
-            const { error } = await supabaseClient.from('squad_registrations').delete().eq('auth_user_id', authId);
-            if(!error) { loadHistory(); loadSlotsGrid(); }
+        async function resetSquadDataOnly(authId) {
+            if(!confirm(`Delete registration data for ${authId}?`)) return;
+            await supabaseClient.from('squad_registrations').delete().eq('auth_user_id', authId);
+            loadHistory(); loadSlotsGrid();
         }
         
         async function deletePaymentUser(id) {
-             if(!confirm("Delete record?")) return;
+             if(!confirm("Permanently delete this user record from database?")) return;
              await supabaseClient.from('payment_users').delete().eq('id', id);
              loadHistory();
         }
