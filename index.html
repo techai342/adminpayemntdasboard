@@ -29,23 +29,47 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
+
+        .btn-manager {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-manager:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5);
+        }
     </style>
 </head>
 <body class="font-sans">
     <div class="bg-fixed"></div>
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="flex justify-between items-center mb-8 glass p-6 rounded-3xl shadow-2xl">
-            <div>
-                <h1 class="text-2xl font-black text-white italic uppercase tracking-wider">Squad Manager</h1>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <p class="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase">System Online</p>
+        <!-- HEADER WITH NEW SQUAD MANAGER BUTTON -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 glass p-6 rounded-3xl shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-black text-white italic uppercase tracking-wider">Payment Admin</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <p class="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase">System Online</p>
+                    </div>
                 </div>
             </div>
-            <button onclick="location.reload()" class="bg-white/5 hover:bg-white/10 p-3 rounded-xl transition border border-white/10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            </button>
+
+            <div class="flex items-center gap-3">
+                <!-- NEW SQUAD MANAGER BUTTON -->
+                <a href="https://admindta.vercel.app/" target="_blank" class="btn-manager px-6 py-3 rounded-xl text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Squad Manager
+                </a>
+
+                <button onclick="location.reload()" class="bg-white/5 hover:bg-white/10 p-3 rounded-xl transition border border-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+            </div>
         </header>
 
         <!-- Tabs -->
@@ -148,7 +172,6 @@
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
         let selectedUser = null;
-        let squadFilledMap = {}; // Cache for slot status
 
         function switchTab(tab) {
             ['new', 'old', 'slots'].forEach(t => {
@@ -163,27 +186,22 @@
             if(tab === 'slots') loadSlotsGrid();
         }
 
-        // --- HELPER TO GET SLOT STATUS ---
         async function fetchSlotStatuses() {
-            // 1. Get all static slots
             const { data: auths } = await supabaseClient.from('squad_auth').select('user_id').order('user_id');
-            // 2. Get assigned slots (from payment users)
             const { data: assigned } = await supabaseClient.from('payment_users').select('assigned_auth_id').eq('status', 'approved');
-            // 3. Get filled slots (from squad registrations)
             const { data: filled } = await supabaseClient.from('squad_registrations').select('auth_user_id');
 
-            const assignedIds = assigned.map(a => a.assigned_auth_id);
-            const filledIds = filled.map(f => f.auth_user_id);
+            const assignedIds = assigned ? assigned.map(a => a.assigned_auth_id) : [];
+            const filledIds = filled ? filled.map(f => f.auth_user_id) : [];
 
             return auths.map(slot => {
-                let status = 'green'; // Default Free
-                if (assignedIds.includes(slot.user_id)) status = 'yellow'; // Sent
-                if (filledIds.includes(slot.user_id)) status = 'red'; // Filled
+                let status = 'green';
+                if (assignedIds.includes(slot.user_id)) status = 'yellow';
+                if (filledIds.includes(slot.user_id)) status = 'red';
                 return { id: slot.user_id, status: status };
             });
         }
 
-        // --- LOAD NEW REQUESTS ---
         async function loadNew() {
             const container = document.getElementById('section-new');
             container.innerHTML = '<div class="col-span-full py-20 text-center animate-pulse font-bold text-slate-500">Scanning for requests...</div>';
@@ -217,14 +235,11 @@
             });
         }
 
-        // --- LOAD HISTORY & SINGLE SLOT RESET ---
         async function loadHistory() {
             const body = document.getElementById('historyBody');
             body.innerHTML = '<tr><td colspan="5" class="p-10 text-center">Loading...</td></tr>';
             
-            // Fetch users
             const { data: users } = await supabaseClient.from('payment_users').select('*').neq('status', 'pending').order('created_at', {ascending: false});
-            // Fetch slot statuses to know if data is filled
             const slots = await fetchSlotStatuses();
             const filledMap = {};
             slots.forEach(s => filledMap[s.id] = s.status);
@@ -234,7 +249,6 @@
                 const isApproved = u.status === 'approved';
                 const assignedId = u.assigned_auth_id;
                 
-                // Determine Row Status
                 let rowStatusHtml = `<span class="text-red-500">REJECTED</span>`;
                 let resetButton = '';
                 
@@ -242,7 +256,6 @@
                     const status = filledMap[assignedId];
                     if(status === 'red') {
                         rowStatusHtml = `<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-[10px]">🔴 FILLED</span>`;
-                        // Show RESET SQUAD DATA button only if filled
                         resetButton = `<button onclick="resetSquadData('${assignedId}')" class="bg-red-600 text-white px-3 py-1 rounded-lg text-[10px] uppercase hover:bg-red-500 ml-2">Reset Squad Data</button>`;
                     } else {
                         rowStatusHtml = `<span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-[10px]">🟡 SENT</span>`;
@@ -264,22 +277,18 @@
             });
         }
 
-        // --- VISUALIZER ---
         async function loadSlotsGrid() {
             const grid = document.getElementById('slotsGrid');
             grid.innerHTML = '<div class="col-span-full text-center">Analysing Slots...</div>';
-
             const slots = await fetchSlotStatuses();
             
             grid.innerHTML = '';
             slots.forEach(s => {
                 let colorClass = 'status-free';
                 let label = 'Free';
-                
                 if (s.status === 'yellow') { colorClass = 'status-sent'; label = 'Sent'; }
                 if (s.status === 'red') { colorClass = 'status-filled'; label = 'Filled'; }
 
-                // Reset button inside visualizer for quick access
                 let actionBtn = '';
                 if(s.status === 'red') {
                     actionBtn = `<button onclick="resetSquadData('${s.id}')" class="mt-2 text-[8px] bg-red-500/20 text-red-400 px-2 py-1 rounded uppercase hover:bg-red-500 hover:text-white w-full transition">Reset Data</button>`;
@@ -296,7 +305,6 @@
             });
         }
 
-        // --- VERIFY MODAL LOGIC ---
         async function openVerify(user) {
             selectedUser = user;
             document.getElementById('modalImg').src = user.screenshot_url;
@@ -305,10 +313,8 @@
             document.getElementById('modalMethod').innerText = user.payment_method;
             document.getElementById('modalTrx').innerText = user.trx_id;
             
-            // Populate Dropdown with Colors
             const sel = document.getElementById('slotSelect');
             sel.innerHTML = '<option value="">Checking slots...</option>';
-            
             const slots = await fetchSlotStatuses();
             sel.innerHTML = '<option value="">Select a Slot...</option>';
             
@@ -317,73 +323,40 @@
                 let text = 'FREE';
                 if(s.status === 'yellow') { emoji = '🟡'; text = 'SENT'; }
                 if(s.status === 'red') { emoji = '🔴'; text = 'FILLED'; }
-                
-                // Allow admin to select any slot, even if filled (override capability), but show status
                 sel.innerHTML += `<option value="${s.id}">${emoji} ${s.id} [${text}]</option>`;
             });
-
             document.getElementById('verifyModal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            document.getElementById('verifyModal').classList.add('hidden');
-        }
+        function closeModal() { document.getElementById('verifyModal').classList.add('hidden'); }
 
         async function approveAction() {
             const slot = document.getElementById('slotSelect').value;
             if(!slot) return alert("Select a slot first!");
-
-            // Update payment user
             const { error } = await supabaseClient.from('payment_users').update({
                 status: 'approved', assigned_auth_id: slot
             }).eq('id', selectedUser.id);
-
-            if(!error) {
-                alert("Approved! Slot " + slot + " assigned.");
-                closeModal();
-                loadNew();
-            } else {
-                alert("Error updating payment status.");
-            }
+            if(!error) { alert("Approved!"); closeModal(); loadNew(); }
         }
 
         async function rejectAction() {
-            if(!prompt("Type 'REJECT' to confirm rejection.")) return;
-            
-            const { error } = await supabaseClient.from('payment_users').update({
-                status: 'rejected'
-            }).eq('id', selectedUser.id);
-
-            if(!error) {
-                alert("Payment marked as REJECTED.");
-                closeModal();
-                loadNew();
-            }
+            if(!confirm("Reject payment?")) return;
+            const { error } = await supabaseClient.from('payment_users').update({ status: 'rejected' }).eq('id', selectedUser.id);
+            if(!error) { closeModal(); loadNew(); }
         }
 
-        // --- RESET SINGLE SLOT DATA ---
-        // This clears the squad registration but keeps payment history
         async function resetSquadData(authId) {
-            if(!confirm(`WARNING: Are you sure you want to delete SQUAD DATA for ${authId}? The user will have to fill the form again. Payment record will remain.`)) return;
-
+            if(!confirm(`Reset data for ${authId}?`)) return;
             const { error } = await supabaseClient.from('squad_registrations').delete().eq('auth_user_id', authId);
-            
-            if(!error) {
-                alert(`Data for ${authId} has been reset! It is now Yellow (Sent) again.`);
-                loadHistory(); // Refresh view
-                loadSlotsGrid(); // Refresh visualizer if open
-            } else {
-                alert("Error resetting data.");
-            }
+            if(!error) { loadHistory(); loadSlotsGrid(); }
         }
         
         async function deletePaymentUser(id) {
-             if(!confirm("Delete this history record?")) return;
+             if(!confirm("Delete record?")) return;
              await supabaseClient.from('payment_users').delete().eq('id', id);
              loadHistory();
         }
 
-        // Start
         loadNew();
     </script>
 </body>
